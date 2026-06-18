@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sprachium Growth OS</title>
+  <meta name="description" content="The complete growth operating system for Sprachium — M. Khalid Junaid" />
+  <meta name="theme-color" content="#1E2D4E" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen" class="screen hidden">
+  <div class="setup-card">
+    <div class="logo-mark">S</div>
+    <h1>Sprachium Growth OS</h1>
+    <p class="setup-sub">One-time setup to connect your data sync</p>
+
+    <div class="field-group">
+      <label>Anthropic API Key</label>
+      <input type="password" id="api-key-input" placeholder="sk-ant-..." />
+      <span class="field-hint">Get yours free at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></span>
+    </div>
+
+    <div class="field-group">
+      <label>Google Sheets Web App URL</label>
+      <input type="url" id="sheets-url-input" placeholder="https://script.google.com/macros/s/..." />
+      <span class="field-hint">Follow the setup guide in README.md to get this URL</span>
+    </div>
+
+    <button class="btn-primary" onclick="saveSetup()">Save & Start</button>
+    <p class="setup-note">All credentials are stored only in your browser. Nothing is sent to any server except Anthropic's API and your own Google Sheet.</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-screen" class="screen hidden">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo-mark-sm">S</div>
+      <div>
+        <div class="brand-name">Sprachium</div>
+        <div class="brand-sub">Growth OS</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-module="dashboard" onclick="switchModule(this, 'dashboard')">
+        <span class="nav-icon">⌂</span> Dashboard
+      </button>
+      <button class="nav-btn" data-module="create" onclick="switchModule(this, 'create')">
+        <span class="nav-icon">✦</span> Create
+      </button>
+      <button class="nav-btn" data-module="plan" onclick="switchModule(this, 'plan')">
+        <span class="nav-icon">◈</span> Plan
+      </button>
+      <button class="nav-btn" data-module="research" onclick="switchModule(this, 'research')">
+        <span class="nav-icon">◎</span> Research
+      </button>
+      <button class="nav-btn" data-module="course" onclick="switchModule(this, 'course')">
+        <span class="nav-icon">◉</span> Course
+      </button>
+      <button class="nav-btn" data-module="monetize" onclick="switchModule(this, 'monetize')">
+        <span class="nav-icon">◇</span> Monetize
+      </button>
+      <button class="nav-btn" data-module="review" onclick="switchModule(this, 'review')">
+        <span class="nav-icon">▣</span> Review
+      </button>
+      <button class="nav-btn" data-module="help" onclick="switchModule(this, 'help')">
+        <span class="nav-icon">◈</span> Help
+      </button>
+    </nav>
+
+    <div class="sidebar-day" id="sidebar-day-info">
+      <div class="day-num" id="sb-day">—</div>
+      <div class="day-label">of 90 days</div>
+      <div class="phase-tag" id="sb-phase">—</div>
+    </div>
+
+    <button class="settings-btn" onclick="openSettings()">⚙ Settings</button>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+
+    <!-- Dashboard module -->
+    <div id="mod-dashboard" class="module active">
+      <div class="module-header">
+        <div>
+          <h2 id="dash-greeting">Good morning, Malik</h2>
+          <p class="module-tagline" id="dash-date">—</p>
+        </div>
+        <button class="btn-teal" onclick="runDailyBriefing()">▶ Run today's briefing</button>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-day">—</div>
+          <div class="stat-label">Current day</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-tasks">—</div>
+          <div class="stat-label">Tasks done</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-posts">—</div>
+          <div class="stat-label">Posts created</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-research">—</div>
+          <div class="stat-label">Research sessions</div>
+        </div>
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-label">
+          <span>90-day journey</span>
+          <span id="prog-pct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="prog-fill"></div>
+          <div class="phase-marker" style="left:11.1%" title="Growth (Day 11)"></div>
+          <div class="phase-marker" style="left:22.2%" title="Monetization (Day 21)"></div>
+        </div>
+        <div class="progress-phases">
+          <span>Foundation</span>
+          <span>Growth</span>
+          <span>Monetization</span>
+        </div>
+      </div>
+
+      <div class="ai-panel">
+        <div class="ai-panel-header">
+          <span class="ai-label">AI Advisor</span>
+          <span class="ai-model">claude-sonnet-4-6</span>
+        </div>
+        <div id="dash-ai-output" class="ai-output">
+          <span class="ai-placeholder">Click "Run today's briefing" to get your personalised daily plan from the AI advisor.</span>
+        </div>
+      </div>
+
+      <div class="checklist-section">
+        <h3>Phase checklist</h3>
+        <div class="checklist" id="phase-checklist"></div>
+      </div>
+    </div>
+
+    <!-- AI Chat module (shared by all modules) -->
+    <div id="mod-create" class="module">
+      <div class="module-header">
+        <div>
+          <h2>Create</h2>
+          <p class="module-tagline">Generate carousel content, captions, and hashtags</p>
+        </div>
+      </div>
+      <div class="chat-area" id="chat-create"></div>
+      <div class="chat-input-row">
+        <input type="text" id="input-create" placeholder="Ask: create a grammar carousel on Akkusativ..." onkeydown="if(event.key==='Enter') sendChat('create')" />
+        <button class="btn-teal" onclick="sendChat('create')">Send</button>
+      </div>
+      <div class="quick-prompts">
+        <button onclick="quickPrompt('create', 'Create a grammar micro-lesson carousel on the Akkusativ case for A1 students. English medium. Sprachium branding.')">Grammar carousel</button>
+        <button onclick="quickPrompt('create', 'Create a vocabulary carousel on 10 common German food words for A1 level. Include a caption and 30 hashtags.')">Vocab carousel</button>
+        <button onclick="quickPrompt('create', 'Create a motivational carousel: why learn German? Target South Asian students. Include caption and CTA.')">Motivation post</button>
+        <button onclick="quickPrompt('create', 'Generate a quiz carousel: 5 fill-in-the-blank German sentences. Swipe to reveal answers.')">Quiz carousel</button>
+      </div>
+    </div>
+
+    <div id="mod-plan" class="module">
+      <div class="module-header">
+        <div>
+          <h2>Plan</h2>
+          <p class="module-tagline">Weekly content calendar and posting strategy</p>
+        </div>
+      </div>
+      <div class="chat-area" id="chat-plan"></div>
+      <div class="chat-input-row">
+        <input type="text" id="input-plan" placeholder="Ask: generate this week's content calendar..." onkeydown="if(event.key==='Enter') sendChat('plan')" />
+        <button class="btn-teal" onclick="sendChat('plan')">Send</button>
+      </div>
+      <div class="quick-prompts">
+        <button onclick="quickPrompt('plan', 'Generate a full 7-day content calendar for this week. I am in the Foundation phase (Days 1-10). Include pillar, topic, format, and best posting time for each day.')">This week's calendar</button>
+        <button onclick="quickPrompt('plan', 'What are the best posting times on Instagram and Facebook for a German language teacher targeting South Asian students in Pakistan, India, and UK?')">Best posting times</button>
+        <button onclick="quickPrompt('plan', 'Give me a 30-day content plan overview with one topic per day for a German language Instagram account.')">30-day overview</button>
+      </div>
+    </div>
+
+    <div id="mod-research" class="module">
+      <div class="module-header">
+        <div>
+          <h2>Research</h2>
+          <p class="module-tagline">Competitor intel and market analysis</p>
+        </div>
+      </div>
+      <div class="chat-area" id="chat-research"></div>
+      <div class="chat-input-row">
+        <input type="text" id="input-research" placeholder="Ask: analyse German language teaching accounts..." onkeydown="if(event.key==='Enter') sendChat('research')" />
+        <button class="btn-teal" onclick="sendChat('research')">Send</button>
+      </div>
+      <div class="quick-prompts">
+        <button onclick="quickPrompt('research', 'Analyse the top 5 German language teaching Instagram accounts. What content works best? What gaps exist that Sprachium can fill?')">Top competitor analysis</button>
+        <button onclick="quickPrompt('research', 'What hashtags are most effective for German language learning content on Instagram in 2025? Give me 50 ranked by niche relevance.')">Hashtag research</button>
+        <button onclick="quickPrompt('research', 'What type of German learning content gets the most engagement on Facebook vs Instagram? Give me a comparison.')">Platform comparison</button>
+      </div>
+    </div>
+
+    <div id="mod-course" class="module">
+      <div class="module-header">
+        <div>
+          <h2>Course</h2>
+          <p class="module-tagline">AI video lecture pipeline and course materials</p>
+        </div>
+      </div>
+      <div class="chat-area" id="chat-course"></div>
+      <div class="chat-input-row">
+        <input type="text" id="input-course" placeholder="Ask: write a lecture script for A1 Module 1..." onkeydown="if(event.key==='Enter') sendChat('course')" />
+        <button class="btn-teal" onclick="sendChat('course')">Send</button>
+      </div>
+      <div class="quick-prompts">
+        <button onclick="quickPrompt('course', 'Write a full lecture script for A1 Module 1: Alphabet and Pronunciation. Medium: English. Style: conversational, Goethe-inspired pedagogy. Include slide cues.')">A1 Module 1 script</button>
+        <button onclick="quickPrompt('course', 'Generate 5 quiz questions for A1 Module 3: Numbers, Dates, and Time. Include multiple choice options and correct answers.')">Quiz questions</button>
+        <button onclick="quickPrompt('course', 'Create a complete A1 course outline: 12 modules, each with title, learning objective, key grammar points, and 3 exercise types.')">Full A1 outline</button>
+      </div>
+    </div>
+
+    <div id="mod-monetize" class="module">
+      <div class="module-header">
+        <div>
+          <h2>Monetize</h2>
+          <p class="module-tagline">Revenue strategy and launch planning</p>
+        </div>
+      </div>
+      <div class="chat-area" id="chat-monetize"></div>
+      <div class="chat-input-row">
+        <input type="text" id="input-monetize" placeholder="Ask: how do I price my A1 course..." onkeydown="if(event.key==='Enter') sendChat('monetize')" />
+        <button class="btn-teal" onclick="sendChat('monetize')">Send</button>
+      </div>
+      <div class="quick-prompts">
+        <button onclick="quickPrompt('monetize', 'Give me a complete revenue roadmap for Sprachium: Month 1 (build), Month 2 (launch), Month 3 (scale). Include realistic targets for a Pakistani online German teacher.')">90-day revenue roadmap</button>
+        <button onclick="quickPrompt('monetize', 'Write a Gumroad product page for my A1 German course targeting English-speaking South Asian students. Price: $29. Include headline, description, what you get, and FAQ.')">Gumroad page copy</button>
+        <button onclick="quickPrompt('monetize', 'What free tools should I use to run Sprachium with zero budget? List the full stack: website, course hosting, email, video, scheduling.')">Free tools stack</button>
+      </div>
+    </div>
+
+    <div id="mod-review" class="module">
+      <div class="module-header">
+        <div>
+          <h2>Review</h2>
+          <p class="module-tagline">Progress tracking and performance dashboard</p>
+        </div>
+        <button class="btn-outline" onclick="syncFromSheets()">↻ Sync from Sheets</button>
+      </div>
+
+      <div class="review-grid" id="review-grid">
+        <!-- Populated by JS -->
+      </div>
+
+      <div class="log-section">
+        <h3>Log a completed task</h3>
+        <div class="log-row">
+          <input type="text" id="task-input" placeholder="e.g. Published Akkusativ carousel on Instagram" />
+          <select id="task-type">
+            <option value="content">Content</option>
+            <option value="research">Research</option>
+            <option value="build">Build</option>
+            <option value="course">Course</option>
+            <option value="monetize">Monetize</option>
+          </select>
+          <button class="btn-teal" onclick="logTask()">Log</button>
+        </div>
+        <div class="task-log" id="task-log"></div>
+      </div>
+    </div>
+
+    <div id="mod-help" class="module">
+      <div class="module-header">
+        <div>
+          <h2>Help</h2>
+          <p class="module-tagline">Clarity when you're overwhelmed or stuck</p>
+        </div>
+      </div>
+      <div class="chat-area" id="chat-help"></div>
+      <div class="chat-input-row">
+        <input type="text" id="input-help" placeholder="Tell me what's happening..." onkeydown="if(event.key==='Enter') sendChat('help')" />
+        <button class="btn-teal" onclick="sendChat('help')">Send</button>
+      </div>
+      <div class="quick-prompts">
+        <button onclick="quickPrompt('help', 'I am overwhelmed. What is the single most important thing I should do today to grow Sprachium? I am in the Foundation phase.')">What do I do today?</button>
+        <button onclick="quickPrompt('help', 'I have not posted in 3 days. I feel stuck. Give me a simple 30-minute action plan to get back on track.')">I\'m stuck, help me restart</button>
+        <button onclick="quickPrompt('help', 'Is it worth spending time on TikTok as well as Instagram and Facebook, or should I focus on just two platforms?')">Platform focus advice</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="settings-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeSettings()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Settings</h3>
+      <button onclick="closeSettings()" class="modal-close">✕</button>
+    </div>
+    <div class="field-group">
+      <label>Anthropic API Key</label>
+      <input type="password" id="settings-api-key" placeholder="sk-ant-..." />
+    </div>
+    <div class="field-group">
+      <label>Google Sheets Web App URL</label>
+      <input type="url" id="settings-sheets-url" placeholder="https://script.google.com/macros/s/..." />
+    </div>
+    <div class="field-group">
+      <label>Current day override (use to correct the counter)</label>
+      <input type="number" id="settings-day" min="1" max="90" placeholder="e.g. 5" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="resetData()">Reset all data</button>
+      <button class="btn-primary" onclick="saveSettingsModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
