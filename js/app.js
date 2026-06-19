@@ -429,6 +429,7 @@ async function callClaude(messages) {
         'Content-Type': 'application/json',
         'x-api-key': state.apiKey,
         'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'interstitial-1',
         'anthropic-dangerous-direct-browser-calls': 'true'
       },
       body: JSON.stringify({
