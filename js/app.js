@@ -2,6 +2,9 @@
    SPRACHIUM GROWTH OS — App Logic
    ============================================= */
 
+// ---- CLOUDFLARE WORKER PROXY ----
+const WORKER_URL = 'https://withered-silence-aab7.me-khalidbilal975.workers.dev/';
+
 // ---- STORAGE HELPERS ----
 const LS = {
   get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
@@ -36,7 +39,7 @@ const PHASE_CONFIG = {
   growth: {
     label: 'Growth',
     range: [11, 20],
-    priority: 'Add Reels 3× this week and reply to every comment within 1 hour.',
+    priority: 'Add Reels 3x this week and reply to every comment within 1 hour.',
     wins: [
       'Publish today\'s carousel + 1 Story',
       'Record a 30-sec Reel on one grammar tip',
@@ -67,7 +70,7 @@ const PHASE_CHECKLIST = {
     'Competitor research done (Module 2)'
   ],
   growth: [
-    'Reels posted 3× this week',
+    'Reels posted 3x this week',
     'Stories posted daily',
     'First 500 followers reached',
     'Email list at 50+ subscribers',
@@ -104,9 +107,9 @@ Advisor principles:
 - Document the journey — "building in public" is powerful free marketing.
 
 90-day phases:
-- Days 1–10: Foundation (1 post/day, carousels only, establish voice)
-- Days 11–20: Growth (1 post + 1 Story/day, add Reels 3×/week)
-- Days 21–90: Monetization prep (2 posts + Stories + Reels + course launch)
+- Days 1-10: Foundation (1 post/day, carousels only, establish voice)
+- Days 11-20: Growth (1 post + 1 Story/day, add Reels 3x/week)
+- Days 21-90: Monetization prep (2 posts + Stories + Reels + course launch)
 
 Always be direct, specific, and actionable. No filler. Malik values honest feedback over reassurance.`;
 
@@ -115,7 +118,6 @@ function init() {
   const saved = LS.get('sprachium-state');
   if (saved) {
     state = Object.assign(state, saved);
-    // Increment day on each session load
     const today = new Date().toDateString();
     if (state.lastSessionDate !== today) {
       state.day = Math.min((state.day || 1) + 1, 90);
@@ -126,7 +128,6 @@ function init() {
     state.lastSessionDate = new Date().toDateString();
   }
 
-  // Load credentials
   state.apiKey = LS.get('sprachium-api-key') || '';
   state.sheetsUrl = LS.get('sprachium-sheets-url') || '';
 
@@ -195,7 +196,6 @@ function renderDashboard() {
   document.getElementById('sb-day').textContent = `Day ${state.day}`;
   document.getElementById('sb-phase').textContent = cfg.label;
 
-  // Render checklist
   const cl = PHASE_CHECKLIST[phase];
   const done = state.checklistDone || {};
   const clEl = document.getElementById('phase-checklist');
@@ -269,7 +269,6 @@ async function sendChat(mod) {
   updateMsg(typingId, reply);
   chatHistories[mod].push({ role: 'assistant', content: reply });
 
-  // Track content count
   if (mod === 'create') {
     state.contentCount = (state.contentCount || 0) + 1;
     saveState();
@@ -319,7 +318,7 @@ function renderReview() {
     <div class="review-card">
       <h4>Current phase</h4>
       <div style="font-size:20px;font-weight:700;color:#1E2D4E">${cfg.label}</div>
-      <div style="font-size:12px;color:#6b7280;margin-top:4px">Days ${cfg.range[0]}–${cfg.range[1]}</div>
+      <div style="font-size:12px;color:#6b7280;margin-top:4px">Days ${cfg.range[0]}-${cfg.range[1]}</div>
     </div>
     <div class="review-card">
       <h4>Today's priority</h4>
@@ -419,20 +418,15 @@ async function syncFromSheets() {
   }
 }
 
-// ---- CLAUDE API ----
+// ---- CLAUDE API (via Cloudflare Worker) ----
 async function callClaude(messages) {
   if (!state.apiKey) return 'No API key set. Go to Settings to add your Anthropic API key.';
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch(WORKER_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': state.apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'interstitial-1',
-        'anthropic-dangerous-direct-browser-calls': 'true'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        apiKey: state.apiKey,
         model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
